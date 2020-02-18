@@ -77,7 +77,6 @@ Long <- all7 %>%
   gather(a_memorig : g_vote6, key = "variable", value = "value") %>% 
   separate(variable, into = c("wave", "variable"), sep = "_", extra = "merge") %>% 
   spread(key = variable, value = value)
-Long
 ```
 
 ## Filter and recode (20 points)
@@ -167,6 +166,53 @@ Write the R code that does the following.
 5. Write a short interpretation of your findings.
 
 ```{r}
+#### Q1 ####
+Delta <- Long %>% 
+   melt(id = c("wave", "pidp")) %>% 
+   unite("variable", c("wave", "variable"), sep = "_") %>% 
+   dcast(pidp ~ variable) %>% 
+   filter(!is.na(a_vote6) & 
+            !is.na(b_vote6) &
+            !is.na(c_vote6) &
+            !is.na(d_vote6) &
+            !is.na(e_vote6) &
+            !is.na(f_vote6) &
+            !is.na(g_vote6)) %>% 
+  gather(a_age_dv:g_vote6, key = "variables", value = "value") %>% 
+  separate(variables, into = c("wave", "variable"), sep = "_", extra = "merge") %>%
+  spread(key = variable, value = value)
 
+#### Q2 ####
+Delta <- Delta %>% 
+   mutate(diff = abs(as.numeric(vote6) - lag(as.numeric(vote6), 1))) %>% 
+   group_by(pidp) %>% 
+   mutate(Delta = sum(diff, na.rm = TRUE))
+  
+#### Q3 ####
+ Delta %>% 
+   filter(!is.na(sex_dv)) %>% 
+   group_by(sex_dv) %>% 
+   summarise(
+     MeanByGender = mean(Delta, na.rm = TRUE)
+   )
+
+#### Q4 ####
+Age <- Delta %>% 
+   group_by(age = age_dv[wave == "a"]) %>% 
+   summarise(
+     MeanByAge = mean(Delta, na.rm = TRUE)
+   )
+Age %>% 
+   ggplot(aes(x = as.numeric(age), y = MeanByAge)) +
+   geom_point() +
+   geom_smooth() +
+   xlab("Age at wave 1") +
+   ylab("Average stability of political interest") +
+   ggtitle("Stability of political interest by age")
 
 ```
+
+#### Q5 
+As shown by the table, there is only very slight difference in the stability of political interest between men and women, with women slightly more stable than men.
+
+As for age groups, political interest remains relatively stable (with delta of around 3.5) till the age of 65, when political interest becomes less stable as age goes up.
