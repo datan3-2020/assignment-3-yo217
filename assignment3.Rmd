@@ -134,10 +134,14 @@ In the cells of this table you should have mean political interest by sex and wa
 Write a short interpretation of your findings.
 
 ```{r}
+
+library(reshape2)
 meanVote6 %>% 
-  gather(wave:meanVote, key = "variable", value = "value") %>% 
-  unite("variable", c("wave", "variable"), sep = "_") %>% 
-  spread(key = variable, value = value)
+  melt(id = c("wave", "sex_dv")) %>% 
+   unite("variable", c("wave")) %>% 
+   dcast(sex_dv ~ variable)
+
+# In general, women have lower political interest (shown by higher score) than men. For both genders, a trend can be spotted that people became less and less interested in politics until wave 4 (2012-2014) and became increasingly interested afterwards.
 ```
 
 ## Estimate stability of political interest (30 points)
@@ -163,6 +167,6 @@ Write the R code that does the following.
 5. Write a short interpretation of your findings.
 
 ```{r}
-...
+
 
 ```
